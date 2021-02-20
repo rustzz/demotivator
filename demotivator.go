@@ -38,7 +38,7 @@ func (dem *Demotivator) setConfigs(srcImage image.Image) {
 	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X/35
 	dem.FrameConfig.Padding = 2
 	dem.FrameConfig.FrameWidth = 2
-	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 4
+	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 6
 	return
 }
 
@@ -49,12 +49,12 @@ func (dem *Demotivator) saveImage(outImage *gg.Context, path string) bytes.Buffe
 			log.Fatal(err)
 		}
 	} else {
-		imageBuffer := new(bytes.Buffer)
-		err := outImage.EncodePNG(imageBuffer)
+		var imageBuffer bytes.Buffer
+		err := outImage.EncodePNG(&imageBuffer)
 		if err != nil {
 			log.Fatal(err)
 		}
-		return *imageBuffer
+		return imageBuffer
 	}
 	return bytes.Buffer{}
 }

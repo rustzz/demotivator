@@ -16,18 +16,18 @@ func LoadSrcImage(path string) *os.File {
 	return imageReader
 }
 
-func LoadSrcImageFromURL(url string) *bytes.Reader {
+func LoadSrcImageFromURL(url string) bytes.Reader {
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
-		return &bytes.Reader{}
+		return bytes.Reader{}
 	}
 	defer resp.Body.Close()
 	imageBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
-		return &bytes.Reader{}
+		return bytes.Reader{}
 	}
 	imageReader := bytes.NewReader(imageBytes)
-	return imageReader
+	return *imageReader
 }

@@ -18,6 +18,7 @@ var (
 func (dem *Demotivator) settingFont(outImage *gg.Context, text string) int {
 	fontSize := 10
 	for ;; {
+		log.Println(fontSize)
 		err := outImage.LoadFontFace(fmt.Sprintf("%s/fonts/arial.ttf", basePath), float64(fontSize))
 		if err != nil {
 			log.Fatal(err)
