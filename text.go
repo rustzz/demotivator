@@ -15,8 +15,8 @@ var (
 )
 // ========================
 
-func (dem *Demotivator) settingFont(outImage *gg.Context, text string) int {
-	fontSize := 10
+func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize int) {
+	fontSize = 10
 	for ;; {
 		err := outImage.LoadFontFace(fmt.Sprintf("%s/fonts/arial.ttf", basePath), float64(fontSize))
 		if err != nil {
@@ -34,8 +34,9 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) int {
 			((dem.TemplateConfig.PaddingBottom/2-dem.TextConfig.TextSpacing)-int(heightText)) > -5 {
 			for ; outImage.Width() < int(widthText); {
 				fontSize -= 1
-				err := outImage.LoadFontFace(fmt.Sprintf("%s/fonts/arial.ttf", basePath), float64(fontSize))
+				err = outImage.LoadFontFace(fmt.Sprintf("%s/fonts/arial.ttf", basePath), float64(fontSize))
 				if err != nil {
+					log.Fatal(err)
 					return fontSize
 				}
 				widthText, heightText = outImage.MeasureString(text)

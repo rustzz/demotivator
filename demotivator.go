@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/fogleman/gg"
 	"image"
-	"log"
 )
 
 type TemplateConfig struct {
@@ -42,26 +41,27 @@ func (dem *Demotivator) setConfigs(srcImage image.Image) {
 	return
 }
 
-func saveImage(outImage *gg.Context, path string) bytes.Buffer {
+func saveImage(outImage *gg.Context, path string) (imageReader *bytes.Reader, err error) {
 	if len(path) != 0 {
-		err := outImage.SavePNG(path)
+		err = outImage.SavePNG(path)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 	} else {
-		var imageBuffer bytes.Buffer
-		err := outImage.EncodePNG(&imageBuffer)
+		imageBuffer := new(bytes.Buffer)
+		err = outImage.EncodePNG(imageBuffer)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
-		return imageBuffer
+		imageReader = bytes.NewReader(imageBuffer.Bytes())
+		return imageReader, nil
 	}
-	return bytes.Buffer{}
+	return
 }
 
-func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath string) bytes.Buffer {
+func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath string) (imageReader *bytes.Reader, err error) {
 	if !CheckSrcImage(srcImage) {
-		return bytes.Buffer{}
+		return
 	}
 	dem.setConfigs(srcImage)
 	outImage := dem.createTemplate(srcImage)
@@ -70,5 +70,9 @@ func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath strin
 	outImage = dem.setTexts(outImage, texts)
 
 	dem.OutImage = outImage
-	return saveImage(outImage, outPath)
+	imageReader, err = saveImage(outImage, outPath)
+	if err != nil {
+		return nil, err
+	}
+	return imageReader, nil
 }

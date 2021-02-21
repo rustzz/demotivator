@@ -5,7 +5,7 @@ import (
 	"image"
 )
 
-func (dem *Demotivator) makeTemplateImage(srcImage image.Image) *gg.Context {
+func (dem *Demotivator) makeTemplateImage(srcImage image.Image) (templateImage *gg.Context) {
 	templateWidth := srcImage.Bounds().Size().X+
 		dem.TemplateConfig.PaddingLeft+
 		dem.TemplateConfig.PaddingRight+
@@ -17,7 +17,7 @@ func (dem *Demotivator) makeTemplateImage(srcImage image.Image) *gg.Context {
 		dem.TextConfig.TextSpacing+
 		(dem.FrameConfig.FrameWidth*2)+
 		(dem.FrameConfig.Padding*2)
-	templateImage := gg.NewContext(
+	templateImage = gg.NewContext(
 		templateWidth,
 		templateHeight,
 	)
@@ -66,8 +66,8 @@ func (dem *Demotivator) placeSrcImage(outImage *gg.Context, srcImage image.Image
 	return outImage
 }
 
-func (dem *Demotivator) createTemplate(srcImage image.Image) *gg.Context {
-	template := dem.makeTemplateImage(srcImage)
+func (dem *Demotivator) createTemplate(srcImage image.Image) (template *gg.Context) {
+	template = dem.makeTemplateImage(srcImage)
 	template = dem.fillBackground(template)
 	return template
 }
