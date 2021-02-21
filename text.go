@@ -23,14 +23,14 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize
 				return
 		}
 		widthText, heightText := outImage.MeasureString(text)
-		if int(heightText) > (dem.TemplateConfig.PaddingBottom/2-dem.TextConfig.TextSpacing) {
+		if int(heightText) > (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) {
 			fontSize -= 1
 		}
-		if int(heightText) < (dem.TemplateConfig.PaddingBottom/2-dem.TextConfig.TextSpacing) {
+		if int(heightText) < (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) {
 			fontSize += 1
 		}
-		if ((dem.TemplateConfig.PaddingBottom/2-dem.TextConfig.TextSpacing)-int(heightText)) < 5 &&
-			((dem.TemplateConfig.PaddingBottom/2-dem.TextConfig.TextSpacing)-int(heightText)) > -5 {
+		if ((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) < 5 &&
+			((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) > -5 {
 			for ; outImage.Width() < int(widthText); {
 				fontSize -= 1
 				if err = outImage.LoadFontFace(fmt.Sprintf("%s/fonts/%s", basePath, fontName), float64(fontSize));
@@ -62,15 +62,15 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 	widthUpperText, _ := outImage.MeasureString(texts[0])
 	outImage.DrawString(
 		texts[0],
-		float64((outImage.Width()/2)-int(widthUpperText/2)),
-		float64(outImage.Height()-((dem.TemplateConfig.PaddingBottom/2)+dem.TextConfig.TextSpacing)),
+		float64((outImage.Width() / 2 ) - int(widthUpperText / 2)),
+		float64(outImage.Height() - ((dem.TemplateConfig.PaddingBottom / 2) + dem.TextConfig.TextSpacing)),
 	)
 
 	fontSize, err = dem.settingFont(outImage, texts[1])
 	if err != nil {
 		return outImage, err
 	}
-	fontSize -= 15
+	fontSize -= 30
 	if fontSize < 10 {
 		fontSize = 0
 	}
@@ -82,9 +82,9 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 	widthLowerText, _ := outImage.MeasureString(texts[1])
 	outImage.DrawString(
 		texts[1],
-		float64((outImage.Width()/2)-int(widthLowerText/2)),
-		float64(outImage.Height()-
-			(dem.TemplateConfig.PaddingBottom/2)+(dem.TextConfig.TextSpacing)),
+		float64((outImage.Width() / 2) - int(widthLowerText / 2)),
+		float64(outImage.Height() -
+			int(dem.TemplateConfig.PaddingBottom / 2) + int(float64(dem.TextConfig.TextSpacing) * 1.5)),
 	)
 	return outImage, nil
 }

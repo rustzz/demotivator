@@ -31,13 +31,13 @@ type Demotivator struct {
 }
 
 func (dem *Demotivator) setConfigs(srcImage image.Image) {
-	dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y/35
-	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y/20)*3
-	dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X/35
-	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X/35
+	dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y / 35
+	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 20) * 4
+	dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X / 35
+	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X / 35
 	dem.FrameConfig.Padding = 2
 	dem.FrameConfig.FrameWidth = 2
-	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 6
+	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 7
 	return
 }
 
