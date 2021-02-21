@@ -45,16 +45,16 @@ func saveImage(outImage *gg.Context, path string) (imageReader *bytes.Reader, er
 	if len(path) != 0 {
 		err = outImage.SavePNG(path)
 		if err != nil {
-			return nil, err
+			return
 		}
 	} else {
 		imageBuffer := new(bytes.Buffer)
 		err = outImage.EncodePNG(imageBuffer)
 		if err != nil {
-			return nil, err
+			return
 		}
 		imageReader = bytes.NewReader(imageBuffer.Bytes())
-		return imageReader, nil
+		return
 	}
 	return
 }
@@ -65,14 +65,16 @@ func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath strin
 	}
 	dem.setConfigs(srcImage)
 	outImage := dem.createTemplate(srcImage)
-	outImage = dem.drawFrame(outImage)
 	outImage = dem.placeSrcImage(outImage, srcImage)
-	outImage = dem.setTexts(outImage, texts)
+	outImage, err = dem.setTexts(outImage, texts)
+	if err != nil {
+		return
+	}
 
 	dem.OutImage = outImage
 	imageReader, err = saveImage(outImage, outPath)
 	if err != nil {
-		return nil, err
+		return
 	}
-	return imageReader, nil
+	return
 }

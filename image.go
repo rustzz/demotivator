@@ -21,7 +21,7 @@ func (dem *Demotivator) makeTemplateImage(srcImage image.Image) (templateImage *
 		templateWidth,
 		templateHeight,
 	)
-	return templateImage
+	return
 }
 
 func (dem *Demotivator) fillBackground(template *gg.Context) *gg.Context {
@@ -69,5 +69,6 @@ func (dem *Demotivator) placeSrcImage(outImage *gg.Context, srcImage image.Image
 func (dem *Demotivator) createTemplate(srcImage image.Image) (template *gg.Context) {
 	template = dem.makeTemplateImage(srcImage)
 	template = dem.fillBackground(template)
-	return template
+	template = dem.drawFrame(template)
+	return
 }

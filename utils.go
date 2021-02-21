@@ -3,30 +3,28 @@ package demotivator
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 )
 
-func LoadSrcImage(path string) (imageFile *os.File) {
-	imageFile, err := os.Open(path)
+func LoadSrcImage(path string) (imageFile *os.File, err error) {
+	imageFile, err = os.Open(path)
 	if err != nil {
-		log.Fatal(err)
 		return
 	}
-	return imageFile
+	return
 }
 
 func LoadSrcImageFromURL(url string) (imageReader *bytes.Reader, err error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return
 	}
 	defer resp.Body.Close()
 	imageBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return
 	}
 	imageReader = bytes.NewReader(imageBytes)
-	return imageReader, nil
+	return
 }
