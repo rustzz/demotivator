@@ -42,7 +42,7 @@ func (dem *Demotivator) setConfigs(srcImage image.Image) {
 	return
 }
 
-func (dem *Demotivator) saveImage(outImage *gg.Context, path string) bytes.Buffer {
+func saveImage(outImage *gg.Context, path string) bytes.Buffer {
 	if len(path) != 0 {
 		err := outImage.SavePNG(path)
 		if err != nil {
@@ -60,7 +60,7 @@ func (dem *Demotivator) saveImage(outImage *gg.Context, path string) bytes.Buffe
 }
 
 func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath string) bytes.Buffer {
-	if !dem.CheckSrcImage(srcImage) {
+	if !CheckSrcImage(srcImage) {
 		return bytes.Buffer{}
 	}
 	dem.setConfigs(srcImage)
@@ -70,9 +70,5 @@ func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath strin
 	outImage = dem.setTexts(outImage, texts)
 
 	dem.OutImage = outImage
-	return dem.saveImage(outImage, outPath)
-}
-
-func New() *Demotivator {
-	return &Demotivator{}
+	return saveImage(outImage, outPath)
 }

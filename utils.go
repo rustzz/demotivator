@@ -28,6 +28,6 @@ func LoadSrcImageFromURL(url string) bytes.Reader {
 		log.Fatal(err)
 		return bytes.Reader{}
 	}
-	imageReader := bytes.NewReader(imageBytes)
-	return *imageReader
+	imageReader := *bytes.NewReader(imageBytes)
+	return imageReader
 }

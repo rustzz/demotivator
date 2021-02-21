@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/rustzz/demotivator"
 	"image"
 	"log"
+	"os"
 )
 
 
@@ -17,8 +19,9 @@ func main() {
 		return
 	}
 
-	dem := demotivator.New()
+	homeDir, _ := os.UserHomeDir()
+	dem := demotivator.Demotivator{}
 	dem.Make(im, []string{
 		"cum", "cum",
-	}, "/home/rustzz/out.png")
+	}, fmt.Sprintf("%s/out.png", homeDir))
 }
