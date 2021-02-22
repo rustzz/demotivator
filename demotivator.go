@@ -34,11 +34,11 @@ type Demotivator struct {
 
 func New(srcImage image.Image) *Demotivator {
 	dem := &Demotivator{}
-	dem.setConfigs(srcImage)
+	dem.SetConfigs(srcImage)
 	return dem
 }
 
-func (dem *Demotivator) setConfigs(srcImage image.Image) {
+func (dem *Demotivator) SetConfigs(srcImage image.Image) {
 	dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y / 35
 	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 20) * 4
 	dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X / 35
@@ -73,7 +73,7 @@ func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath strin
 	if !CheckSrcImage(srcImage) {
 		return
 	}
-	if !dem.ConfigsConfigured { dem.setConfigs(srcImage) }
+	if !dem.ConfigsConfigured { dem.SetConfigs(srcImage) }
 	outImage := dem.createTemplate(srcImage)
 	outImage = dem.placeSrcImage(outImage, srcImage)
 	outImage, err = dem.setTexts(outImage, texts)
