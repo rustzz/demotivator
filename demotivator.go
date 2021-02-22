@@ -37,7 +37,7 @@ func (dem *Demotivator) setConfigs(srcImage image.Image) {
 	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X / 35
 	dem.FrameConfig.Padding = 2
 	dem.FrameConfig.FrameWidth = 2
-	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 7
+	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 8
 	return
 }
 
