@@ -28,16 +28,26 @@ type Demotivator struct {
 	TemplateConfig		TemplateConfig
 	FrameConfig			FrameConfig
 	TextConfig			TextConfig
+
+	ConfigsConfigured	bool
+}
+
+func New(srcImage image.Image) *Demotivator {
+	dem := &Demotivator{}
+	dem.setConfigs(srcImage)
+	return dem
 }
 
 func (dem *Demotivator) setConfigs(srcImage image.Image) {
 	dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y / 35
-	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 20) * 5
+	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 20) * 4
 	dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X / 35
 	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X / 35
 	dem.FrameConfig.Padding = 2
 	dem.FrameConfig.FrameWidth = 2
-	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 10
+	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 8
+
+	dem.ConfigsConfigured = true
 	return
 }
 
@@ -63,7 +73,7 @@ func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath strin
 	if !CheckSrcImage(srcImage) {
 		return
 	}
-	dem.setConfigs(srcImage)
+	if !dem.ConfigsConfigured { dem.setConfigs(srcImage) }
 	outImage := dem.createTemplate(srcImage)
 	outImage = dem.placeSrcImage(outImage, srcImage)
 	outImage, err = dem.setTexts(outImage, texts)
