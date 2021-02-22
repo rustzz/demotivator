@@ -1,11 +1,14 @@
 package demotivator
 
-import "image"
+import (
+	"github.com/rustzz/demotivator/errors"
+	"image"
+)
 
 
-func CheckSrcImage(srcImage image.Image) bool {
+func CheckSrcImage(srcImage image.Image) error {
 	if srcImage.Bounds().Size().X < 150 || srcImage.Bounds().Size().Y < 150 {
-		return false
+		return &errors.ImageSizeError{}
 	}
-	return true
+	return nil
 }
