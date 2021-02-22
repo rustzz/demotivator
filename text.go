@@ -59,7 +59,7 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 	if err != nil {
 		return outImage, err
 	}
-	fontSize -= 30
+	fontSize -= 10
 	if fontSize < 10 {
 		fontSize = 0
 	}
