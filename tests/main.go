@@ -22,8 +22,8 @@ func main() {
 	}
 
 	homeDir, _ := os.UserHomeDir()
-	dem := &demotivator.Demotivator{}
-	if _, err = dem.Make(im, []string{
+	dem := demotivator.New()
+	if _, err = dem.Make(&im, []string{
 		"cum", "CUM",
 	}, fmt.Sprintf("%s/out.png", homeDir)); err != nil {
 		log.Fatal(err)

@@ -6,12 +6,15 @@ import (
 	"golang.org/x/image/font/gofont/goregular"
 )
 
+var (
+	font, _ = truetype.Parse(goregular.TTF)
+)
+
 func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize int, err error) {
 	fontSize = 10
 	for ;; {
-		font, _ := truetype.Parse(goregular.TTF)
-		face := truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-		outImage.SetFontFace(face)
+		fontFace := truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
+		outImage.SetFontFace(fontFace)
 
 		widthText, heightText := outImage.MeasureString(text)
 		if int(heightText) > (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) {
@@ -24,8 +27,8 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize
 			((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) > -5 {
 			for ; outImage.Width() < int(widthText); {
 				fontSize -= 1
-				face = truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-				outImage.SetFontFace(face)
+				fontFace = truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
+				outImage.SetFontFace(fontFace)
 				widthText, heightText = outImage.MeasureString(text)
 			}
 			return
@@ -34,19 +37,19 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize
 }
 
 func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Context, error) {
-	font, _ := truetype.Parse(goregular.TTF)
 	outImage.SetHexColor("#ffffff")
 
-	fontSize, err := dem.settingFont(outImage, texts[0])
-	if err != nil {
-		return outImage, err
-	}
-	if fontSize < 10 {
-		fontSize = 0
-	}
+	fontSizeUpper, err := dem.settingFont(outImage, texts[0])
+	if err != nil { return outImage, err }
+	if fontSizeUpper < 10 { fontSizeUpper = 0 }
 
-	face := truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-	outImage.SetFontFace(face)
+	fontSizeLower, err := dem.settingFont(outImage, texts[1])
+	if err != nil { return outImage, err }
+	fontSizeLower -= 25
+	if fontSizeLower < 10 { fontSizeLower = 0 }
+
+	fontFaceUpper := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeUpper)})
+	outImage.SetFontFace(fontFaceUpper)
 
 	widthUpperText, _ := outImage.MeasureString(texts[0])
 	outImage.DrawString(
@@ -55,24 +58,15 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 		float64(outImage.Height() - ((dem.TemplateConfig.PaddingBottom / 2) + dem.TextConfig.TextSpacing)),
 	)
 
-	fontSize, err = dem.settingFont(outImage, texts[1])
-	if err != nil {
-		return outImage, err
-	}
-	fontSize -= 25
-	if fontSize < 10 {
-		fontSize = 0
-	}
-
-	face = truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-	outImage.SetFontFace(face)
+	fontFaceLower := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeLower)})
+	outImage.SetFontFace(fontFaceLower)
 
 	widthLowerText, _ := outImage.MeasureString(texts[1])
 	outImage.DrawString(
 		texts[1],
 		float64((outImage.Width() / 2) - int(widthLowerText / 2)),
-		float64(outImage.Height() -
-			dem.TemplateConfig.PaddingBottom/2+ int(float64(dem.TextConfig.TextSpacing) * 1.5)),
+		float64(outImage.Height() - dem.TemplateConfig.PaddingBottom/2 +
+			int(float64(dem.TextConfig.TextSpacing) * 1.5)),
 	)
 	return outImage, nil
 }

@@ -25,11 +25,19 @@ type TextConfig struct {
 
 type Demotivator struct {
 	OutImage			*gg.Context
-	TemplateConfig		TemplateConfig
-	FrameConfig			FrameConfig
-	TextConfig			TextConfig
+	TemplateConfig		*TemplateConfig
+	FrameConfig			*FrameConfig
+	TextConfig			*TextConfig
 
 	configsConfigured	bool
+}
+
+func New() *Demotivator {
+	return &Demotivator{
+		TemplateConfig: &TemplateConfig{},
+		FrameConfig: &FrameConfig{},
+		TextConfig: &TextConfig{},
+	}
 }
 
 func (dem *Demotivator) SetConfigs(srcImage image.Image) {
@@ -45,40 +53,28 @@ func (dem *Demotivator) SetConfigs(srcImage image.Image) {
 	return
 }
 
-func saveImage(outImage *gg.Context, path string) (imageReader *bytes.Reader, err error) {
+func (dem *Demotivator) saveImage(outImage *gg.Context, path string) (imageReader *bytes.Reader, err error) {
 	if len(path) != 0 {
-		err = outImage.SavePNG(path)
-		if err != nil {
-			return
-		}
+		if err = outImage.SavePNG(path); err != nil { return }
 	} else {
 		imageBuffer := new(bytes.Buffer)
-		err = outImage.EncodePNG(imageBuffer)
-		if err != nil {
-			return
-		}
+		if err = outImage.EncodePNG(imageBuffer); err != nil { return }
 		imageReader = bytes.NewReader(imageBuffer.Bytes())
 		return
 	}
 	return
 }
 
-func (dem *Demotivator) Make(srcImage image.Image, texts []string, outPath string) (imageReader *bytes.Reader, err error) {
-	if err = CheckSrcImage(srcImage); err != nil {
-		return
-	}
-	if !dem.configsConfigured { dem.SetConfigs(srcImage) }
-	outImage := dem.createTemplate(srcImage)
-	outImage = dem.placeSrcImage(outImage, srcImage)
+func (dem *Demotivator) Make(srcImage *image.Image, texts []string, outPath string) (imageReader *bytes.Reader, err error) {
+	if err = CheckSrcImage(*srcImage); err != nil { return }
+	if !dem.configsConfigured { dem.SetConfigs(*srcImage) }
+	outImage := dem.createTemplate(*srcImage)
+	outImage = dem.placeSrcImage(outImage, *srcImage)
 	outImage, err = dem.setTexts(outImage, texts)
-	if err != nil {
-		return
-	}
+	if err != nil { return }
 
 	dem.OutImage = outImage
-	imageReader, err = saveImage(outImage, outPath)
-	if err != nil {
-		return
-	}
+	imageReader, err = dem.saveImage(outImage, outPath)
+	if err != nil { return }
 	return
 }
