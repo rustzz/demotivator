@@ -17,12 +17,8 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize
 		outImage.SetFontFace(fontFace)
 
 		widthText, heightText := outImage.MeasureString(text)
-		if int(heightText) > (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) {
-			fontSize -= 1
-		}
-		if int(heightText) < (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) {
-			fontSize += 1
-		}
+		if int(heightText) > (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) { fontSize -= 1 }
+		if int(heightText) < (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) { fontSize += 1 }
 		if ((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) < 5 &&
 			((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) > -5 {
 			for ; outImage.Width() < int(widthText); {
@@ -50,6 +46,8 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 
 	fontFaceUpper := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeUpper)})
 	outImage.SetFontFace(fontFaceUpper)
+	fontFaceLower := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeLower)})
+	outImage.SetFontFace(fontFaceLower)
 
 	widthUpperText, _ := outImage.MeasureString(texts[0])
 	outImage.DrawString(
@@ -57,9 +55,6 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 		float64((outImage.Width() / 2 ) - int(widthUpperText / 2)),
 		float64(outImage.Height() - ((dem.TemplateConfig.PaddingBottom / 2) + dem.TextConfig.TextSpacing)),
 	)
-
-	fontFaceLower := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeLower)})
-	outImage.SetFontFace(fontFaceLower)
 
 	widthLowerText, _ := outImage.MeasureString(texts[1])
 	outImage.DrawString(
