@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/rustzz/demotivator"
 	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"os"
 )
@@ -13,12 +15,10 @@ func main() {
 	imageReader, err := demotivator.LoadSrcImageFromURL(url)
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 	im, _, err := image.Decode(imageReader)
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
 	homeDir, _ := os.UserHomeDir()

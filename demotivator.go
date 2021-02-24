@@ -65,7 +65,9 @@ func (dem *Demotivator) saveImage(outImage *gg.Context, path string) (imageReade
 	return
 }
 
-func (dem *Demotivator) Make(srcImage *image.Image, texts []string, outPath string) (imageReader *bytes.Reader, err error) {
+func (dem *Demotivator) Make(
+	srcImage *image.Image, texts []string, outPath string,
+) (imageReader *bytes.Reader, err error) {
 	if err = CheckSrcImage(*srcImage); err != nil { return }
 	if !dem.configsConfigured { dem.SetConfigs(*srcImage) }
 	outImage := dem.createTemplate(*srcImage)
