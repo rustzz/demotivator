@@ -20,7 +20,8 @@ type FrameConfig struct {
 }
 
 type TextConfig struct {
-	TextSpacing		int
+	TextSpacing			int
+	reachedImageBorder	bool
 }
 
 type Demotivator struct {

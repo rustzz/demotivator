@@ -11,6 +11,7 @@ var (
 )
 
 func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize int, err error) {
+	dem.TextConfig.reachedImageBorder = false
 	fontSize = 10
 	for ;; {
 		fontFace := truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
@@ -22,6 +23,7 @@ func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize
 		if ((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) < 5 &&
 			((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) > -5 {
 			for ; outImage.Width() < int(widthText); {
+				dem.TextConfig.reachedImageBorder = true
 				fontSize -= 1
 				fontFace = truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
 				outImage.SetFontFace(fontFace)
@@ -41,7 +43,7 @@ func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Cont
 
 	fontSizeLower, err := dem.settingFont(outImage, texts[1])
 	if err != nil { return outImage, err }
-	fontSizeLower -= 25
+	if !dem.TextConfig.reachedImageBorder { fontSizeLower -= 25 }
 	if fontSizeLower < 10 { fontSizeLower = 0 }
 
 	fontFaceUpper := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeUpper)})
