@@ -2,82 +2,59 @@ package demotivator
 
 import (
 	"bytes"
-	"github.com/fogleman/gg"
 	"image"
 )
 
-type TemplateConfig struct {
-	PaddingTop		int
-	PaddingBottom	int
-	PaddingLeft		int
-	PaddingRight	int
-}
-
-type FrameConfig struct {
-	MarginBottom	int
-	Padding			int
-	FrameWidth		int
-}
-
-type TextConfig struct {
-	TextSpacing			int
-	reachedImageBorder	bool
-}
-
-type Demotivator struct {
-	OutImage			*gg.Context
-	TemplateConfig		*TemplateConfig
-	FrameConfig			*FrameConfig
-	TextConfig			*TextConfig
-
-	configsConfigured	bool
-}
-
-func New() *Demotivator {
-	return &Demotivator{
-		TemplateConfig: &TemplateConfig{},
-		FrameConfig: &FrameConfig{},
-		TextConfig: &TextConfig{},
+func New(srcImage image.Image, texts []string) *Demotivator {
+	_tmp := &Demotivator{
+		TemplateConfig: &Template{
+			FontConfig: &Font{},
+			TextConfig: &Text{},
+			FrameConfig: &Frame{},
+		},
+		SrcImageConfig: &SrcImage{},
 	}
+	_tmp.SetConfig(srcImage, texts)
+	return _tmp
 }
 
-func (dem *Demotivator) SetConfigs(srcImage image.Image) {
-	dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y / 35
-	dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 20) * 4
-	dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X / 35
-	dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X / 35
-	dem.FrameConfig.Padding = 2
-	dem.FrameConfig.FrameWidth = 2
-	dem.TextConfig.TextSpacing = dem.TemplateConfig.PaddingBottom / 8
+func (dem *Demotivator) SetConfig(srcImage image.Image, texts []string) {
+	dem.TemplateConfig.FrameConfig.Padding = 4
+	dem.TemplateConfig.FrameConfig.Width = 4
+	if srcImage != nil {
+		dem.SrcImageConfig.Image = srcImage
+		dem.SrcImageConfig.Width = srcImage.Bounds().Size().X
+		dem.SrcImageConfig.Height = srcImage.Bounds().Size().Y
+		dem.TemplateConfig.PaddingTop = srcImage.Bounds().Size().Y / 35
+		dem.TemplateConfig.PaddingBottom = (srcImage.Bounds().Size().Y / 35) * 6
+		dem.TemplateConfig.PaddingLeft = srcImage.Bounds().Size().X / 35
+		dem.TemplateConfig.PaddingRight = srcImage.Bounds().Size().X / 35
+		dem.TemplateConfig.TextConfig.VerticalSpacing = dem.TemplateConfig.PaddingTop / 4
+		dem.TemplateConfig.Width = dem.TemplateConfig.PaddingLeft + dem.TemplateConfig.PaddingRight +
+			(dem.TemplateConfig.FrameConfig.Width * 2) + (dem.TemplateConfig.FrameConfig.Padding * 2) +
+			srcImage.Bounds().Size().X
+		dem.TemplateConfig.Height = dem.TemplateConfig.PaddingTop + dem.TemplateConfig.PaddingBottom +
+			(dem.TemplateConfig.FrameConfig.Width * 2) + (dem.TemplateConfig.FrameConfig.Padding * 2) +
+			srcImage.Bounds().Size().Y + (dem.TemplateConfig.TextConfig.VerticalSpacing * 2)
+	}
+	if texts != nil { dem.TemplateConfig.TextConfig.Texts = texts }
 
-	dem.configsConfigured = true
+	if srcImage != nil && texts != nil { dem.configsConfigured = true }
+}
+
+func (dem *Demotivator) GetImageBuffer() (imageBuffer *bytes.Buffer, err error) {
+	imageBuffer = &bytes.Buffer{}
+	if err = dem.TemplateConfig.Image.EncodePNG(imageBuffer); err != nil { return }
 	return
 }
 
-func (dem *Demotivator) saveImage(outImage *gg.Context, path string) (imageReader *bytes.Reader, err error) {
-	if len(path) != 0 {
-		if err = outImage.SavePNG(path); err != nil { return }
-	} else {
-		imageBuffer := new(bytes.Buffer)
-		if err = outImage.EncodePNG(imageBuffer); err != nil { return }
-		imageReader = bytes.NewReader(imageBuffer.Bytes())
-		return
-	}
-	return
-}
+func (dem *Demotivator) Make(srcImage image.Image, texts []string) (imageBuffer *bytes.Buffer, err error) {
+	if !dem.configsConfigured { dem.SetConfig(srcImage, texts) }
+	dem.TemplateConfig.RenderTemplate()
+	dem.RenderSrcImage()
+	if err = dem.TemplateConfig.RenderTexts(); err != nil { return }
 
-func (dem *Demotivator) Make(
-	srcImage *image.Image, texts []string, outPath string,
-) (imageReader *bytes.Reader, err error) {
-	if err = CheckSrcImage(*srcImage); err != nil { return }
-	if !dem.configsConfigured { dem.SetConfigs(*srcImage) }
-	outImage := dem.createTemplate(*srcImage)
-	outImage = dem.placeSrcImage(outImage, *srcImage)
-	outImage, err = dem.setTexts(outImage, texts)
-	if err != nil { return }
-
-	dem.OutImage = outImage
-	imageReader, err = dem.saveImage(outImage, outPath)
+	imageBuffer, err = dem.GetImageBuffer()
 	if err != nil { return }
 	return
 }

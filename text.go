@@ -1,69 +1,71 @@
 package demotivator
 
 import (
-	"github.com/fogleman/gg"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
-var (
-	font, _ = truetype.Parse(goregular.TTF)
-)
-
-func (dem *Demotivator) settingFont(outImage *gg.Context, text string) (fontSize int, err error) {
-	dem.TextConfig.reachedImageBorder = false
-	fontSize = 10
+func (template *Template) configureFont(text string) (err error) {
+	template.FontConfig.Font, err = truetype.Parse(goregular.TTF)
+	if err != nil { return }
+	template.TextConfig.reachedImageBorder = false
+	template.FontConfig.FontSize = 10
 	for ;; {
-		fontFace := truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-		outImage.SetFontFace(fontFace)
+		fontFace := truetype.NewFace(
+			template.FontConfig.Font, &truetype.Options{Size: float64(template.FontConfig.FontSize)},
+		)
+		template.Image.SetFontFace(fontFace)
 
-		widthText, heightText := outImage.MeasureString(text)
-		if int(heightText) > (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) { fontSize -= 1 }
-		if int(heightText) < (dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) { fontSize += 1 }
-		if ((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) < 5 &&
-			((dem.TemplateConfig.PaddingBottom / 2 - dem.TextConfig.TextSpacing) - int(heightText)) > -5 {
-			for ; outImage.Width() < int(widthText); {
-				dem.TextConfig.reachedImageBorder = true
-				fontSize -= 1
-				fontFace = truetype.NewFace(font, &truetype.Options{Size: float64(fontSize)})
-				outImage.SetFontFace(fontFace)
-				widthText, heightText = outImage.MeasureString(text)
+		widthText, heightText := template.Image.MeasureString(text)
+		if int(heightText) > (template.PaddingBottom / 2) { template.FontConfig.FontSize -= 1 }
+		if int(heightText) < (template.PaddingBottom / 2) { template.FontConfig.FontSize += 1 }
+		if ((template.PaddingBottom / 2) - int(heightText)) < 5 &&
+			((template.PaddingBottom / 2) - int(heightText)) > -5 {
+			for ; template.Image.Width() < int(widthText); {
+				template.TextConfig.reachedImageBorder = true
+				template.FontConfig.FontSize -= 1
+				fontFace = truetype.NewFace(
+					template.FontConfig.Font, &truetype.Options{Size: float64(template.FontConfig.FontSize)},
+				)
+				template.Image.SetFontFace(fontFace)
+				widthText, heightText = template.Image.MeasureString(text)
 			}
 			return
 		}
 	}
 }
 
-func (dem *Demotivator) setTexts(outImage *gg.Context, texts []string) (*gg.Context, error) {
-	outImage.SetHexColor("#ffffff")
+func (template *Template) RenderTexts() (err error) {
+	template.Image.SetHexColor("#ffffff")
 
-	fontSizeUpper, err := dem.settingFont(outImage, texts[0])
-	if err != nil { return outImage, err }
+	if err = template.configureFont(template.TextConfig.Texts[0]); err != nil { return }
+	fontSizeUpper := template.FontConfig.FontSize
 	if fontSizeUpper < 10 { fontSizeUpper = 0 }
 
-	fontSizeLower, err := dem.settingFont(outImage, texts[1])
-	if err != nil { return outImage, err }
-	if !dem.TextConfig.reachedImageBorder { fontSizeLower -= 25 }
+	if err = template.configureFont(template.TextConfig.Texts[1]); err != nil { return }
+	fontSizeLower := template.FontConfig.FontSize
+	if !template.TextConfig.reachedImageBorder { fontSizeLower -= 35 }
 	if fontSizeLower < 10 { fontSizeLower = 0 }
 
-	fontFaceUpper := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeUpper)})
-	fontFaceLower := truetype.NewFace(font, &truetype.Options{Size: float64(fontSizeLower)})
+	fontFaceUpper := truetype.NewFace(template.FontConfig.Font, &truetype.Options{Size: float64(fontSizeUpper)})
+	fontFaceLower := truetype.NewFace(template.FontConfig.Font, &truetype.Options{Size: float64(fontSizeLower)})
 
-	outImage.SetFontFace(fontFaceUpper)
-	widthUpperText, _ := outImage.MeasureString(texts[0])
-	outImage.DrawString(
-		texts[0],
-		float64((outImage.Width() / 2 ) - int(widthUpperText / 2)),
-		float64(outImage.Height() - ((dem.TemplateConfig.PaddingBottom / 2) + dem.TextConfig.TextSpacing)),
+	template.Image.SetFontFace(fontFaceUpper)
+	widthUpperText, heightUpperText := template.Image.MeasureString(template.TextConfig.Texts[0])
+	template.Image.DrawString(
+		template.TextConfig.Texts[0],
+		float64((template.Image.Width() / 2 ) - int(widthUpperText / 2)),
+		float64(template.Image.Height() - (template.PaddingBottom + template.TextConfig.VerticalSpacing) +
+			int(heightUpperText)),
 	)
 
-	outImage.SetFontFace(fontFaceLower)
-	widthLowerText, _ := outImage.MeasureString(texts[1])
-	outImage.DrawString(
-		texts[1],
-		float64((outImage.Width() / 2) - int(widthLowerText / 2)),
-		float64(outImage.Height() - dem.TemplateConfig.PaddingBottom/2 +
-			int(float64(dem.TextConfig.TextSpacing) * 1.5)),
+	template.Image.SetFontFace(fontFaceLower)
+	widthLowerText, heightLowerText := template.Image.MeasureString(template.TextConfig.Texts[1])
+	template.Image.DrawString(
+		template.TextConfig.Texts[1],
+		float64((template.Image.Width() / 2) - int(widthLowerText / 2)),
+		float64(template.Image.Height() - (template.PaddingBottom) + template.TextConfig.VerticalSpacing +
+			int(heightUpperText) + int(heightLowerText)),
 	)
-	return outImage, nil
+	return
 }
