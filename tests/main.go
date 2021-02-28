@@ -61,7 +61,7 @@ func main() {
 	if err != nil { log.Fatal(err) }
 
 	homeDir, err := os.UserHomeDir()
-	file, err := os.Create(fmt.Sprintf("%s/out1.png", homeDir))
+	file, err := os.Create(fmt.Sprintf("%s/out.png", homeDir))
 	if err != nil { log.Fatal(err) }
 	defer file.Close()
 
