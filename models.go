@@ -12,9 +12,10 @@ type Font struct {
 }
 
 type Text struct {
-	Texts				[]string
-	VerticalSpacing		int
+	FontConfig			*Font
 
+	Texts				[2]string
+	VerticalSpacing		int
 	reachedImageBorder	bool
 }
 
@@ -30,7 +31,6 @@ type SrcImage struct {
 }
 
 type Template struct {
-	FontConfig		*Font
 	TextConfig		*Text
 	FrameConfig		*Frame
 	Image			*gg.Context

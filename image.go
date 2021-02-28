@@ -58,5 +58,4 @@ func (dem *Demotivator) RenderSrcImage() {
 		dem.TemplateConfig.PaddingLeft + dem.TemplateConfig.FrameConfig.Padding + dem.TemplateConfig.FrameConfig.Width,
 		dem.TemplateConfig.PaddingTop + dem.TemplateConfig.FrameConfig.Padding + dem.TemplateConfig.FrameConfig.Width,
 	)
-	return
 }

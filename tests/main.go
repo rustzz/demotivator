@@ -14,10 +14,10 @@ import (
 
 var (
 	url = "https://2ch.hk/makaba/templates/img/anon.jpg"
-	texts = []string{"cum CUM", "cum CUM"}
+	texts = [2]string{"cum CUM", "cum CUM"}
 )
 
-func GetImage() (outImage image.Image, err error) {
+func GetImage(url string) (outImage image.Image, err error) {
 	resp, err := http.Get(url)
 	if err != nil { return }
 	defer resp.Body.Close()
@@ -32,21 +32,20 @@ func GetImage() (outImage image.Image, err error) {
 }
 
 func FromConstructor() (imageBuffer *bytes.Buffer, err error) {
-	srcImage, err := GetImage()
+	srcImage, err := GetImage(url)
 	if err != nil { return }
 	dem := demotivator.New(srcImage, texts)
-	imageBuffer, err = dem.Make(nil, nil)
+	imageBuffer, err = dem.Make(nil, [2]string{})
 	if err != nil { return }
 	return
 }
 
 func FromObject() (imageBuffer *bytes.Buffer, err error) {
-	srcImage, err := GetImage()
+	srcImage, err := GetImage(url)
 	if err != nil { return }
 	dem := &demotivator.Demotivator{
 		TemplateConfig: &demotivator.Template{
-			FontConfig: &demotivator.Font{},
-			TextConfig: &demotivator.Text{},
+			TextConfig: &demotivator.Text{ FontConfig: &demotivator.Font{} },
 			FrameConfig: &demotivator.Frame{},
 		},
 		SrcImageConfig: &demotivator.SrcImage{},
@@ -57,8 +56,8 @@ func FromObject() (imageBuffer *bytes.Buffer, err error) {
 }
 
 func main() {
-	//imageBuffer, err := FromConstructor()
-	imageBuffer, err := FromObject()
+	imageBuffer, err := FromConstructor()
+	//imageBuffer, err := FromObject()
 	if err != nil { log.Fatal(err) }
 
 	homeDir, err := os.UserHomeDir()

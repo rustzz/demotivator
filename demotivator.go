@@ -5,11 +5,10 @@ import (
 	"image"
 )
 
-func New(srcImage image.Image, texts []string) *Demotivator {
+func New(srcImage image.Image, texts [2]string) *Demotivator {
 	_tmp := &Demotivator{
 		TemplateConfig: &Template{
-			FontConfig: &Font{},
-			TextConfig: &Text{},
+			TextConfig: &Text{ FontConfig: &Font{} },
 			FrameConfig: &Frame{},
 		},
 		SrcImageConfig: &SrcImage{},
@@ -18,7 +17,9 @@ func New(srcImage image.Image, texts []string) *Demotivator {
 	return _tmp
 }
 
-func (dem *Demotivator) SetConfig(srcImage image.Image, texts []string) {
+func (dem *Demotivator) SetConfig(srcImage image.Image, texts [2]string) {
+	dem.TemplateConfig.TextConfig.Texts = texts
+
 	dem.TemplateConfig.FrameConfig.Padding = 4
 	dem.TemplateConfig.FrameConfig.Width = 4
 	if srcImage != nil {
@@ -36,10 +37,9 @@ func (dem *Demotivator) SetConfig(srcImage image.Image, texts []string) {
 		dem.TemplateConfig.Height = dem.TemplateConfig.PaddingTop + dem.TemplateConfig.PaddingBottom +
 			(dem.TemplateConfig.FrameConfig.Width * 2) + (dem.TemplateConfig.FrameConfig.Padding * 2) +
 			srcImage.Bounds().Size().Y + (dem.TemplateConfig.TextConfig.VerticalSpacing * 2)
-	}
-	if texts != nil { dem.TemplateConfig.TextConfig.Texts = texts }
 
-	if srcImage != nil && texts != nil { dem.configsConfigured = true }
+		dem.configsConfigured = true
+	}
 }
 
 func (dem *Demotivator) GetImageBuffer() (imageBuffer *bytes.Buffer, err error) {
@@ -48,7 +48,7 @@ func (dem *Demotivator) GetImageBuffer() (imageBuffer *bytes.Buffer, err error) 
 	return
 }
 
-func (dem *Demotivator) Make(srcImage image.Image, texts []string) (imageBuffer *bytes.Buffer, err error) {
+func (dem *Demotivator) Make(srcImage image.Image, texts [2]string) (imageBuffer *bytes.Buffer, err error) {
 	if !dem.configsConfigured { dem.SetConfig(srcImage, texts) }
 	dem.TemplateConfig.RenderTemplate()
 	dem.RenderSrcImage()
