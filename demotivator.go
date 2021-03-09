@@ -42,19 +42,20 @@ func (dem *Demotivator) SetConfig(srcImage image.Image, texts [2]string) {
 	}
 }
 
-func (dem *Demotivator) GetImageBuffer() (imageBuffer *bytes.Buffer, err error) {
-	imageBuffer = &bytes.Buffer{}
-	if err = dem.TemplateConfig.Image.EncodePNG(imageBuffer); err != nil { return }
+func (dem *Demotivator) GetImageBuffer() (imgBuffer *bytes.Buffer, err error) {
+	imgBuffer = &bytes.Buffer{}
+	if err = dem.TemplateConfig.Image.EncodePNG(imgBuffer); err != nil { return }
 	return
 }
 
-func (dem *Demotivator) Make(srcImage image.Image, texts [2]string) (imageBuffer *bytes.Buffer, err error) {
+func (dem *Demotivator) Make(srcImage image.Image, texts [2]string) (imgBytes []byte, err error) {
 	if !dem.configsConfigured { dem.SetConfig(srcImage, texts) }
 	dem.TemplateConfig.RenderTemplate()
 	dem.RenderSrcImage()
 	if err = dem.TemplateConfig.RenderTexts(); err != nil { return }
 
-	imageBuffer, err = dem.GetImageBuffer()
+	imgBuffer, err := dem.GetImageBuffer()
 	if err != nil { return }
+	imgBytes = imgBuffer.Bytes()
 	return
 }

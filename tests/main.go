@@ -31,16 +31,16 @@ func GetImage(url string) (outImage image.Image, err error) {
 	return
 }
 
-func FromConstructor() (imageBuffer *bytes.Buffer, err error) {
+func FromConstructor() (imgBytes []byte, err error) {
 	srcImage, err := GetImage(url)
 	if err != nil { return }
 	dem := demotivator.New(srcImage, texts)
-	imageBuffer, err = dem.Make(nil, [2]string{})
+	imgBytes, err = dem.Make(nil, [2]string{})
 	if err != nil { return }
 	return
 }
 
-func FromObject() (imageBuffer *bytes.Buffer, err error) {
+func FromObject() (imgBytes []byte, err error) {
 	srcImage, err := GetImage(url)
 	if err != nil { return }
 	dem := &demotivator.Demotivator{
@@ -50,14 +50,14 @@ func FromObject() (imageBuffer *bytes.Buffer, err error) {
 		},
 		SrcImageConfig: &demotivator.SrcImage{},
 	}
-	imageBuffer, err = dem.Make(srcImage, texts)
+	imgBytes, err = dem.Make(srcImage, texts)
 	if err != nil { return }
 	return
 }
 
 func main() {
-	imageBuffer, err := FromConstructor()
-	//imageBuffer, err := FromObject()
+	imgBytes, err := FromConstructor()
+	//imgBytes, err := FromObject()
 	if err != nil { log.Fatal(err) }
 
 	homeDir, err := os.UserHomeDir()
@@ -65,7 +65,8 @@ func main() {
 	if err != nil { log.Fatal(err) }
 	defer file.Close()
 
-	im, _, err := image.Decode(imageBuffer)
+	imgBuffer := bytes.NewBuffer(imgBytes)
+	im, _, err := image.Decode(imgBuffer)
 	if err != nil { log.Fatal(err) }
 	if err = png.Encode(file, im); err != nil { log.Fatal(err) }
 }
