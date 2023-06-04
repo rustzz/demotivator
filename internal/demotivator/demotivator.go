@@ -1,17 +1,16 @@
 package demotivator
 
 import (
-	"log"
 	"os"
+	"runtime/debug"
 
+	"github.com/sirupsen/logrus"
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
-func errorCatch(err error, text string) {
-	if err != nil {
-		log.Fatal(text)
-	}
-}
+var (
+	log = logrus.New()
+)
 
 type demotivator struct {
 	inFontPath string
@@ -29,7 +28,9 @@ type demotivator struct {
 func New(imagePath string, fontPath string) *demotivator {
 	inImage := imagick.NewMagickWand()
 	err := inImage.ReadImage(imagePath)
-	errorCatch(err, "Ошибка чтения входного файла")
+	if err != nil {
+		log.Error(err)
+	}
 	return &demotivator{
 		inFontPath:     fontPath,
 		inImage:        inImage,
@@ -61,7 +62,9 @@ func (d *demotivator) createTopTemplate() {
 		uint(d.getInImageHeight()+((d.margin+d.borderWidth+d.padding)*2)),
 		pw,
 	)
-	errorCatch(err, "Ошибка создания верхнего изображения")
+	if err != nil {
+		log.Error(err)
+	}
 	pw.Destroy()
 
 	pw = imagick.NewPixelWand()
@@ -83,7 +86,9 @@ func (d *demotivator) createTopTemplate() {
 	)
 	pw.Destroy()
 	err = d.topTemplate.DrawImage(dw)
-	errorCatch(err, "Ошибка отрисовки рамки")
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (d *demotivator) mergeInImageToTopTemplate() {
@@ -92,7 +97,9 @@ func (d *demotivator) mergeInImageToTopTemplate() {
 		int(d.margin+d.borderWidth+d.padding),
 		int(d.margin+d.borderWidth+d.padding),
 	)
-	errorCatch(err, "Ошибка слияния входного и верхнего изображения")
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (d *demotivator) createBottomTemplate(text1, text2 string) {
@@ -101,18 +108,28 @@ func (d *demotivator) createBottomTemplate(text1, text2 string) {
 	pw := imagick.NewPixelWand()
 	pw.SetColor("black")
 	err := d.bottomTemplate.NewImage(d.topTemplate.GetImageWidth(), d.getInImageHeight(), pw)
-	errorCatch(err, "Ошибка создания нижнего изображения")
+	if err != nil {
+		log.Error(err)
+	}
 	pw.Destroy()
 
 	pw = imagick.NewPixelWand()
 	pw.SetColor("white")
 	dw := imagick.NewDrawingWand()
 	err = dw.SetFont(d.inFontPath)
-	errorCatch(err, "Ошибка загрузки шрифта")
+	if err != nil {
+		log.Error(err)
+	}
 	dw.SetFontSize(fontSize)
 	dw.SetFillColor(pw)
 	pw.Destroy()
 
+	defer func() {
+		if panicInfo := recover(); panicInfo != nil {
+			log.Errorf("%v, %s", panicInfo, string(debug.Stack()))
+		}
+	}()
+	// error on set emoji font : QueryFontMetrics
 	metrics1 := d.bottomTemplate.QueryFontMetrics(dw, text1)
 	metrics2 := d.bottomTemplate.QueryFontMetrics(dw, text2)
 
@@ -136,7 +153,9 @@ func (d *demotivator) createBottomTemplate(text1, text2 string) {
 		uint(d.margin*2)+uint(metrics1.TextHeight)+uint(metrics2.TextHeight),
 		imagick.FILTER_LANCZOS2,
 	)
-	errorCatch(err, "Ошибка адаптации размера нижней части изображения")
+	if err != nil {
+		log.Error(err)
+	}
 
 	dw.Annotation(
 		float64(d.bottomTemplate.GetImageWidth())/2-metrics1.TextWidth/2,
@@ -149,7 +168,9 @@ func (d *demotivator) createBottomTemplate(text1, text2 string) {
 		text2,
 	)
 	err = d.bottomTemplate.DrawImage(dw)
-	errorCatch(err, "Ошибка отрисовки текста нижней части изображения")
+	if err != nil {
+		log.Error(err)
+	}
 	dw.Destroy()
 }
 
@@ -169,9 +190,13 @@ func (d *demotivator) mergeTopAndBottomTemplates() {
 
 func (d *demotivator) testShow(w *imagick.MagickWand) {
 	err := w.ResizeImage(w.GetImageWidth()/2, w.GetImageHeight()/2, imagick.FILTER_LANCZOS2)
-	errorCatch(err, "Ошибка изменения выходного изображения")
+	if err != nil {
+		log.Error(err)
+	}
 	err = w.DisplayImage(os.Getenv("DISPLAY"))
-	errorCatch(err, "Ошибка открытия предпросмотра выходного изображения")
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (d *demotivator) saveImage(imageOutPath string) {
