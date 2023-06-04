@@ -88,7 +88,7 @@ func (d *demotivator) createTopTemplate() {
 
 func (d *demotivator) mergeInImageToTopTemplate() {
 	err := d.topTemplate.CompositeImage(
-		d.inImage, imagick.COMPOSITE_OP_OVER, false,
+		d.inImage, imagick.COMPOSITE_OP_OVER, true,
 		int(d.margin+d.borderWidth+d.padding),
 		int(d.margin+d.borderWidth+d.padding),
 	)
@@ -163,8 +163,8 @@ func (d *demotivator) mergeTopAndBottomTemplates() {
 	)
 	pw.Destroy()
 
-	d.outImage.CompositeImage(d.topTemplate, imagick.COMPOSITE_OP_OVER, false, 0, 0)
-	d.outImage.CompositeImage(d.bottomTemplate, imagick.COMPOSITE_OP_OVER, false, 0, int(d.topTemplate.GetImageHeight()))
+	d.outImage.CompositeImage(d.topTemplate, imagick.COMPOSITE_OP_OVER, true, 0, 0)
+	d.outImage.CompositeImage(d.bottomTemplate, imagick.COMPOSITE_OP_OVER, true, 0, int(d.topTemplate.GetImageHeight()))
 }
 
 func (d *demotivator) testShow(w *imagick.MagickWand) {
@@ -178,7 +178,7 @@ func (d *demotivator) saveImage(imageOutPath string) {
 	d.outImage.WriteImage(imageOutPath)
 }
 
-func (d *demotivator) Start(text1, text2, imageOutPath string, debug bool) {
+func (d *demotivator) Generate(text1, text2, imageOutPath string, debug bool) {
 	d.confFrameSizes()
 	d.createTopTemplate()
 	d.mergeInImageToTopTemplate()

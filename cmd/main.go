@@ -17,5 +17,5 @@ func main() {
 	flag.Parse()
 
 	dem := demotivator.New(imageInPath, fontPath)
-	dem.Start(text1, text2, imageOutPath, debug)
+	dem.Generate(text1, text2, imageOutPath, debug)
 }
