@@ -1,20 +1,13 @@
 package demotivator
 
 import (
-	"os"
 	"runtime/debug"
 
 	"github.com/sirupsen/logrus"
 	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
-var (
-	log = logrus.New()
-)
-
-type demotivator struct {
-	inFontPath string
-
+type drawer struct {
 	inImage        *imagick.MagickWand
 	outImage       *imagick.MagickWand
 	topTemplate    *imagick.MagickWand
@@ -25,36 +18,39 @@ type demotivator struct {
 	borderWidth uint
 }
 
-func New(imagePath string, fontPath string) *demotivator {
-	inImage := imagick.NewMagickWand()
-	err := inImage.ReadImage(imagePath)
-	if err != nil {
-		log.Error(err)
-	}
-	return &demotivator{
-		inFontPath:     fontPath,
-		inImage:        inImage,
+func newDrawer() *drawer {
+	return &drawer{
+		inImage:        imagick.NewMagickWand(),
 		outImage:       imagick.NewMagickWand(),
 		topTemplate:    imagick.NewMagickWand(),
 		bottomTemplate: imagick.NewMagickWand(),
 	}
 }
 
-func (d *demotivator) getInImageWidth() uint {
+func (d *drawer) LoadInImage(imageBlob []byte) {
+	logrus.Info("Загружаем изображение")
+	if err := d.inImage.ReadImageBlob(imageBlob); err != nil {
+		logrus.Fatal(err)
+	}
+}
+
+func (d *drawer) getInImageWidth() uint {
 	return d.inImage.GetImageWidth()
 }
 
-func (d *demotivator) getInImageHeight() uint {
+func (d *drawer) getInImageHeight() uint {
 	return d.inImage.GetImageHeight()
 }
 
-func (d *demotivator) confFrameSizes() {
+func (d *drawer) ConfigureFrameSizes() {
+	logrus.Info("Формируем размеры рамки")
 	d.margin = uint(float64(d.getInImageWidth()+d.getInImageHeight()) * float64(0.01))
 	d.borderWidth = uint(float64(d.getInImageWidth()+d.getInImageHeight()) * float64(0.004))
 	d.padding = uint(float64(d.getInImageWidth()+d.getInImageHeight()) * float64(0.002))
 }
 
-func (d *demotivator) createTopTemplate() {
+func (d *drawer) CreateTopTemplate() {
+	logrus.Info("Создаем верхнюю часть изображения")
 	pw := imagick.NewPixelWand()
 	pw.SetColor("black")
 	err := d.topTemplate.NewImage(
@@ -63,7 +59,7 @@ func (d *demotivator) createTopTemplate() {
 		pw,
 	)
 	if err != nil {
-		log.Error(err)
+		logrus.Fatal(err)
 	}
 	pw.Destroy()
 
@@ -87,38 +83,45 @@ func (d *demotivator) createTopTemplate() {
 	pw.Destroy()
 	err = d.topTemplate.DrawImage(dw)
 	if err != nil {
-		log.Error(err)
+		logrus.Fatal(err)
 	}
 }
 
-func (d *demotivator) mergeInImageToTopTemplate() {
+func (d *drawer) MergeInImageToTopTemplate() {
+	logrus.Info("Сливаем верхнюю часть и входящее изображение")
 	err := d.topTemplate.CompositeImage(
 		d.inImage, imagick.COMPOSITE_OP_OVER, true,
 		int(d.margin+d.borderWidth+d.padding),
 		int(d.margin+d.borderWidth+d.padding),
 	)
 	if err != nil {
-		log.Error(err)
+		logrus.Fatal(err)
 	}
 }
 
-func (d *demotivator) createBottomTemplate(text1, text2 string) {
+func (d *drawer) CreateBottomTemplate(ftext, stext, fontPath string) {
+	if len(ftext) == 0 || len(stext) == 0 {
+		return
+	}
+	logrus.Info("Создаем нижнюю часть изображения")
 	fontSize := 100.0
 
 	pw := imagick.NewPixelWand()
 	pw.SetColor("black")
 	err := d.bottomTemplate.NewImage(d.topTemplate.GetImageWidth(), d.getInImageHeight(), pw)
 	if err != nil {
-		log.Error(err)
+		logrus.Error(err)
 	}
 	pw.Destroy()
 
 	pw = imagick.NewPixelWand()
 	pw.SetColor("white")
 	dw := imagick.NewDrawingWand()
-	err = dw.SetFont(d.inFontPath)
-	if err != nil {
-		log.Error(err)
+	if len(fontPath) != 0 {
+		err = dw.SetFont(fontPath)
+		if err != nil {
+			logrus.Error(err)
+		}
 	}
 	dw.SetFontSize(fontSize)
 	dw.SetFillColor(pw)
@@ -126,25 +129,25 @@ func (d *demotivator) createBottomTemplate(text1, text2 string) {
 
 	defer func() {
 		if panicInfo := recover(); panicInfo != nil {
-			log.Errorf("%v, %s", panicInfo, string(debug.Stack()))
+			logrus.Fatalf("%v, %s", panicInfo, string(debug.Stack()))
 		}
 	}()
 	// error on set emoji font : QueryFontMetrics
-	metrics1 := d.bottomTemplate.QueryFontMetrics(dw, text1)
-	metrics2 := d.bottomTemplate.QueryFontMetrics(dw, text2)
+	metrics1 := d.bottomTemplate.QueryFontMetrics(dw, ftext)
+	metrics2 := d.bottomTemplate.QueryFontMetrics(dw, stext)
 
 	for metrics1.TextWidth > float64(d.topTemplate.GetImageWidth()) ||
 		metrics2.TextWidth > float64(d.topTemplate.GetImageWidth()) {
 		fontSize -= 6
 		dw.SetFontSize(fontSize)
-		metrics1 = d.bottomTemplate.QueryFontMetrics(dw, text1)
-		metrics2 = d.bottomTemplate.QueryFontMetrics(dw, text2)
+		metrics1 = d.bottomTemplate.QueryFontMetrics(dw, ftext)
+		metrics2 = d.bottomTemplate.QueryFontMetrics(dw, stext)
 	}
 
-	if len(text1) == 0 {
+	if len(ftext) == 0 {
 		metrics1.TextHeight = 0
 	}
-	if len(text2) == 0 {
+	if len(stext) == 0 {
 		metrics2.TextHeight = 0
 	}
 
@@ -154,27 +157,28 @@ func (d *demotivator) createBottomTemplate(text1, text2 string) {
 		imagick.FILTER_LANCZOS2,
 	)
 	if err != nil {
-		log.Error(err)
+		logrus.Fatal(err)
 	}
 
 	dw.Annotation(
 		float64(d.bottomTemplate.GetImageWidth())/2-metrics1.TextWidth/2,
 		metrics1.TextHeight-float64(d.margin/2),
-		text1,
+		ftext,
 	)
 	dw.Annotation(
 		float64(d.bottomTemplate.GetImageWidth())/2-metrics2.TextWidth/2,
 		metrics1.TextHeight-float64(d.margin/2)+metrics2.TextHeight,
-		text2,
+		stext,
 	)
 	err = d.bottomTemplate.DrawImage(dw)
 	if err != nil {
-		log.Error(err)
+		logrus.Fatal(err)
 	}
 	dw.Destroy()
 }
 
-func (d *demotivator) mergeTopAndBottomTemplates() {
+func (d *drawer) MergeTopAndBottomTemplates() {
+	logrus.Info("Сливаем верхнюю и нижнюю части изображения")
 	pw := imagick.NewPixelWand()
 	pw.SetColor("black")
 	d.outImage.NewImage(
@@ -188,30 +192,13 @@ func (d *demotivator) mergeTopAndBottomTemplates() {
 	d.outImage.CompositeImage(d.bottomTemplate, imagick.COMPOSITE_OP_OVER, true, 0, int(d.topTemplate.GetImageHeight()))
 }
 
-func (d *demotivator) testShow(w *imagick.MagickWand) {
-	err := w.ResizeImage(w.GetImageWidth()/2, w.GetImageHeight()/2, imagick.FILTER_LANCZOS2)
-	if err != nil {
-		log.Error(err)
-	}
-	err = w.DisplayImage(os.Getenv("DISPLAY"))
-	if err != nil {
-		log.Error(err)
-	}
+func (d *drawer) GetBlob() []byte {
+	return d.outImage.GetImageBlob()
 }
 
-func (d *demotivator) saveImage(imageOutPath string) {
-	d.outImage.WriteImage(imageOutPath)
-}
-
-func (d *demotivator) Generate(text1, text2, imageOutPath string, debug bool) {
-	d.confFrameSizes()
-	d.createTopTemplate()
-	d.mergeInImageToTopTemplate()
-	d.createBottomTemplate(text1, text2)
-	d.mergeTopAndBottomTemplates()
-	if debug {
-		d.testShow(d.outImage)
-		return
+func (d *drawer) SaveImage(outputPath string) {
+	logrus.Infof("Сохраняем изображение по пути: %s", outputPath)
+	if err := d.outImage.WriteImage(outputPath); err != nil {
+		logrus.Fatal(err)
 	}
-	d.saveImage(imageOutPath)
 }
