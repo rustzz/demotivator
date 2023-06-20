@@ -1,4 +1,4 @@
-module demotivator
+module github.com/rustzz/demotivator
 
 go 1.20
 
